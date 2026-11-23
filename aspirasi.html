@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aspirasi Siswa - MPK SMK WAHIDIN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#14308f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>try{if(localStorage.getItem("mpk_tema")==="gelap")document.documentElement.dataset.tema="gelap"}catch(e){}</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav" id="nav"></header>
+<section class="hero kecil"><div class="wrap"><h1>Aspirasi Siswa</h1><p>Sampaikan kritik, saran, atau ide untuk SMK Wahidin. Nama boleh dikosongkan.</p></div></section>
+
+<main class="wrap" style="padding:30px 0">
+  <div id="warn"></div>
+
+  <section class="blok" style="padding-top:0" id="kirim">
+    <h2 class="judul">Kirim Aspirasi</h2>
+    <div class="card" style="margin-top:16px">
+      <form id="form" autocomplete="off">
+        <label for="kat">Kategori *</label>
+        <select id="kat" required>
+          <option value="">Pilih kategori</option>
+          <option>Sarana &amp; Prasarana</option>
+          <option>Kegiatan Belajar Mengajar</option>
+          <option>Kegiatan &amp; Acara</option>
+          <option>Kedisiplinan</option>
+          <option>Kebersihan Lingkungan</option>
+          <option>Lainnya</option>
+        </select>
+        <div class="row2">
+          <div><label for="kelas">Kelas *</label>
+          <select id="kelas" required><option value="">Pilih kelas</option><option>X</option><option>XI</option><option>XII</option></select></div>
+          <div><label for="jurusan">Jurusan *</label>
+          <select id="jurusan" required><option value="">Pilih jurusan</option>
+            <option value="RPL">RPL - Rekayasa Perangkat Lunak (PPLG)</option>
+            <option value="AKL">AKL - Akuntansi &amp; Keuangan Lembaga</option>
+            <option value="BR">BR - Bisnis Ritel</option>
+            <option value="MP">MP - Manajemen Perkantoran</option>
+            <option value="TKJ">TKJ - Teknik Komputer &amp; Jaringan</option></select></div>
+        </div>
+        <label for="isi">Isi aspirasi * <span style="font-weight:400;color:var(--gray)">(10 sampai 1000 karakter)</span></label>
+        <textarea id="isi" required minlength="10" maxlength="1000"></textarea>
+        <label for="nama">Nama (opsional, kosongkan jika ingin anonim)</label>
+        <input id="nama" maxlength="60">
+        <label for="foto">Foto pendukung (opsional, maks 2 MB)</label>
+        <input id="foto" type="file" accept="image/jpeg,image/png,image/webp">
+        <input id="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
+        <p class="meta" style="margin-top:12px">Jangan menuliskan data pribadi orang lain (nomor HP, alamat). Aspirasi berisi kata kasar, fitnah, atau spam dapat ditolak. Aspirasi baru tampil di forum setelah diperiksa pengurus.</p>
+        <div id="pesan"></div>
+        <button class="btn" id="kirimBtn" style="margin-top:8px">Kirim Aspirasi</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="blok" style="padding-top:0">
+    <h2 class="judul">Forum Aspirasi Terbuka</h2>
+    <div class="row" style="margin:14px 0">
+      <select id="filterKat">
+        <option value="">Semua kategori</option>
+        <option>Sarana &amp; Prasarana</option><option>Kegiatan Belajar Mengajar</option><option>Kegiatan &amp; Acara</option>
+        <option>Kedisiplinan</option><option>Kebersihan Lingkungan</option><option>Lainnya</option>
+      </select>
+    </div>
+    <div id="b-forum" class="grid"></div>
+  </section>
+
+  <section class="blok" style="padding-top:0">
+    <h2 class="judul">Pertanyaan Umum (FAQ)</h2><p class="sub"></p>
+    <div id="b-faq"></div>
+  </section>
+</main>
+<footer id="foot"></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="anim.js"></script>
+<script src="fitur.js"></script>
+<script src="blok.js"></script>
+<script>
+(async () => {
+  await renderShell("aspirasi.html");
+  await Blok.init();
+  if (!window.configOk) return;
+  document.getElementById("filterKat").onchange = () => Blok.init();
+
+  const f = document.getElementById("form"), pesan = document.getElementById("pesan"), btn = document.getElementById("kirimBtn");
+  const say = (t, ok) => pesan.innerHTML = t ? `<div class="msg ${ok ? "ok" : "err"}">${esc(t)}</div>` : "";
+
+  f.addEventListener("submit", async e => {
+    e.preventDefault(); say("");
+    if (document.getElementById("website").value) return;                 // honeypot (bot)
+    try { if (Date.now() - (+localStorage.getItem("mpk_last") || 0) < 60000) return say("Tunggu sebentar sebelum mengirim lagi."); } catch { }
+    const isi = document.getElementById("isi").value.trim();
+    if (isi.length < 10) return say("Isi aspirasi minimal 10 karakter.");
+    btn.disabled = true; btn.textContent = "Mengirim...";
+    try {
+      let foto_url = null;
+      const file = document.getElementById("foto").files[0];
+      if (file) {
+        const blob = await kompresGambar(file);
+        if (blob.size > 2 * 1024 * 1024) throw new Error("Foto terlalu besar (maks 2 MB).");
+        const path = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.jpg`;
+        const up = await sb.storage.from("aspirasi").upload(path, blob, { contentType: "image/jpeg" });
+        if (up.error) throw up.error;
+        foto_url = sb.storage.from("aspirasi").getPublicUrl(path).data.publicUrl;
+      }
+      const nama = document.getElementById("nama").value.trim();
+      const { error } = await sb.from("aspirasi").insert({ kategori: document.getElementById("kat").value, kelas: document.getElementById("kelas").value, jurusan: document.getElementById("jurusan").value, isi, nama: nama || null, foto_url });
+      if (error) throw error;
+      try { localStorage.setItem("mpk_last", String(Date.now())); } catch { }
+      f.reset();
+      say("Terima kasih! Aspirasimu sudah masuk dan akan diperiksa pengurus sebelum tampil di forum.", true);
+    } catch (err) { say(err.message || "Gagal mengirim. Coba lagi."); }
+    btn.disabled = false; btn.textContent = "Kirim Aspirasi";
+  });
+})();
+</script>
+</body>
+</html>

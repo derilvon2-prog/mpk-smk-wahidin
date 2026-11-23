@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Struktur Pengurus - MPK SMK WAHIDIN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#14308f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>try{if(localStorage.getItem("mpk_tema")==="gelap")document.documentElement.dataset.tema="gelap"}catch(e){}</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav" id="nav"></header>
+<main class="wrap" style="padding:36px 0">
+  <div id="warn"></div>
+  <h2 class="judul">Daftar Anggota MPK</h2>
+  <p class="sub">Seluruh anggota dan pengurus MPK SMK Wahidin.</p>
+  <div id="isi"></div>
+</main>
+<footer id="foot"></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="anim.js"></script>
+<script src="fitur.js"></script>
+<script>
+(async () => {
+  await renderShell("struktur.html");
+  if (configWarning(document.getElementById("warn"))) return;
+  const { data } = await sb.from("struktur").select("*").eq("tampil", true).order("urutan").order("id");
+  const box = document.getElementById("isi");
+  if (!data || !data.length) { box.innerHTML = `<div class="kosong">Data struktur pengurus belum diisi oleh admin.</div>`; return; }
+  box.innerHTML = `<div class="grid">${data.map(p => `<div class="card person">
+    <div class="foto">${safeUrl(p.foto_url) ? `<img loading="lazy" src="${safeUrl(p.foto_url)}" alt="">` : esc(p.nama.charAt(0).toUpperCase())}</div>
+    <h3>${esc(p.nama)}</h3><div><span class="badge">${esc(p.jabatan)}</span></div>
+    ${p.periode ? `<div class="meta" style="margin-top:6px">Periode ${esc(p.periode)}</div>` : ""}</div>`).join("")}</div>`;
+})();
+</script>
+</body>
+</html>

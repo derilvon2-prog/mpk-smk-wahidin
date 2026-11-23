@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pencarian - MPK SMK WAHIDIN</title>
+<meta name="theme-color" content="#14308f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>try{if(localStorage.getItem("mpk_tema")==="gelap")document.documentElement.dataset.tema="gelap"}catch(e){}</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav" id="nav"></header>
+<section class="hero kecil"><div class="wrap"><h1>Pencarian</h1><p id="subjudul"></p></div></section>
+<main class="wrap" style="padding:30px 0">
+  <div id="warn"></div>
+  <div class="row" style="margin-bottom:16px"><input id="q" type="search" placeholder="Cari berita, aktivitas, komisi, FAQ, aspirasi..." autofocus></div>
+  <div id="isi"></div>
+</main>
+<footer id="foot"></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="anim.js"></script>
+<script src="fitur.js"></script>
+<script>
+(async () => {
+  await renderShell("cari.html");
+  if (configWarning(document.getElementById("warn"))) return;
+  document.getElementById("subjudul").textContent = "Cari informasi di seluruh website.";
+  const q = document.getElementById("q"), box = document.getElementById("isi");
+  const bersih = t => t.replace(/[%_,()\\\\*"]/g, " ").trim();
+  let aspCache = null, tm;
+  const grup = (judul, arr) => arr.length ? `<h3 style="margin:18px 0 8px">${judul}</h3><div class="grid">${arr.join("")}</div>` : "";
+  const cari = async () => {
+    const t = bersih(q.value); if (t.length < 2) { box.innerHTML = `<div class="kosong">Ketik minimal 2 huruf.</div>`; return; }
+    const p = `%${t}%`, lo = t.toLowerCase();
+    if (!aspCache) { const { data } = await sb.rpc("forum_aspirasi", { p_device: deviceId() }); aspCache = data || []; }
+    const [b, a, k, f, pg] = await Promise.all([
+      sb.from("berita").select("id,judul,ringkasan").eq("terbit", true).or(`judul.ilike.${p},ringkasan.ilike.${p},isi.ilike.${p}`).limit(10),
+      sb.from("aktivitas").select("id,judul,ringkasan,tanggal").eq("tampil", true).or(`judul.ilike.${p},ringkasan.ilike.${p}`).limit(10),
+      sb.from("komisi").select("id,nama,deskripsi").eq("tampil", true).or(`nama.ilike.${p},deskripsi.ilike.${p}`).limit(10),
+      sb.from("faq").select("id,pertanyaan,jawaban").eq("tampil", true).or(`pertanyaan.ilike.${p},jawaban.ilike.${p}`).limit(10),
+      sb.from("pengumuman").select("id,judul,isi").eq("terbit", true).or(`judul.ilike.${p},isi.ilike.${p}`).limit(10)]);
+    const as = aspCache.filter(x => (x.isi + " " + (x.tanggapan || "")).toLowerCase().includes(lo)).slice(0, 10);
+    const kar = (h, j, s) => `<div class="card"><h3><a href="${h}">${esc(j)}</a></h3><p>${esc((s || "").slice(0, 140))}</p></div>`;
+    const html = grup("Berita", (b.data || []).map(x => kar("berita.html?id=" + x.id, x.judul, x.ringkasan)))
+      + grup("Aktivitas", (a.data || []).map(x => kar("publikasi.html", x.judul, x.ringkasan)))
+      + grup("Komisi", (k.data || []).map(x => kar("komisi.html?id=" + x.id, x.nama, x.deskripsi)))
+      + grup("FAQ", (f.data || []).map(x => kar("aspirasi.html", x.pertanyaan, x.jawaban)))
+      + grup("Pengumuman", (pg.data || []).map(x => kar("pengumuman.html", x.judul, x.isi)))
+      + grup("Forum Aspirasi", as.map(x => kar("aspirasi.html", x.kategori, x.isi)));
+    box.innerHTML = html || `<div class="kosong">Tidak ada hasil untuk "${esc(t)}".</div>`;
+  };
+  q.addEventListener("input", () => { clearTimeout(tm); tm = setTimeout(cari, 350); });
+  const awal = new URLSearchParams(location.search).get("q"); if (awal) { q.value = awal; cari(); } else box.innerHTML = "";
+})();
+</script>
+</body>
+</html>

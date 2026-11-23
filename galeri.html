@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Galeri - MPK SMK WAHIDIN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#14308f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>try{if(localStorage.getItem("mpk_tema")==="gelap")document.documentElement.dataset.tema="gelap"}catch(e){}</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav" id="nav"></header>
+<main class="wrap" style="padding:36px 0">
+  <div id="warn"></div>
+  <h2 class="judul">Galeri Kegiatan</h2>
+  <p class="sub">Dokumentasi resmi kegiatan MPK.</p>
+  <div id="isi"></div>
+</main>
+<footer id="foot"></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="anim.js"></script>
+<script src="fitur.js"></script>
+<script>
+(async () => {
+  await renderShell("galeri.html");
+  if (configWarning(document.getElementById("warn"))) return;
+  const { data } = await sb.from("galeri").select("*").eq("tampil", true).order("dibuat", { ascending: false });
+  const box = document.getElementById("isi");
+  if (!data || !data.length) { box.innerHTML = `<div class="kosong">Belum ada foto dokumentasi.</div>`; return; }
+  box.innerHTML = `<div class="gal">${data.map(g => `<figure><a href="${safeUrl(g.gambar_url)}" target="_blank" rel="noopener"><img loading="lazy" src="${safeUrl(g.gambar_url)}" alt="${esc(g.judul)}"></a><div class="rk" data-rk="galeri:${g.id}"></div></figure>`).join("")}</div>`;
+})();
+</script>
+</body>
+</html>

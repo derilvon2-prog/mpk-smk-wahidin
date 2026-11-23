@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Berita - MPK SMK WAHIDIN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#14308f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>try{if(localStorage.getItem("mpk_tema")==="gelap")document.documentElement.dataset.tema="gelap"}catch(e){}</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav" id="nav"></header>
+<main class="wrap" style="padding:36px 0">
+  <div id="warn"></div>
+  <h2 class="judul">Berita &amp; Kegiatan</h2>
+  <div class="row" style="margin:16px 0">
+    <input id="cari" type="search" placeholder="Cari berita...">
+  </div>
+  <div id="isi"></div>
+</main>
+<footer id="foot"></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="anim.js"></script>
+<script src="fitur.js"></script>
+<script>
+(async () => {
+  await renderShell("berita.html");
+  if (configWarning(document.getElementById("warn"))) return;
+  const box = document.getElementById("isi");
+  const id = new URLSearchParams(location.search).get("id");
+
+  if (id) { // detail
+    document.getElementById("cari").parentElement.classList.add("hide");
+    const { data: b } = await sb.from("berita").select("*").eq("id", id).maybeSingle();
+    if (!b) { box.innerHTML = `<div class="kosong">Berita tidak ditemukan.</div>`; return; }
+    document.title = b.judul + " - MPK SMK WAHIDIN";
+    box.innerHTML = `<article class="card">
+      <p><a href="berita.html"><svg class="ic arr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg> Semua berita</a></p>
+      <h1 style="margin:8px 0">${esc(b.judul)}</h1>
+      <div class="meta">${tgl(b.dibuat)} ${b.terbit ? "" : '<span class="badge">DRAFT</span>'}</div>
+      ${safeUrl(b.gambar_url) ? `<div class="thumb"><img src="${safeUrl(b.gambar_url)}" alt=""></div>` : ""}
+      <p>${nl2br(b.isi)}</p><div class="rk" data-rk="berita:${b.id}"></div></article>`;
+    return;
+  }
+
+  const { data } = await sb.from("berita").select("id,judul,ringkasan,gambar_url,dibuat").eq("terbit", true).order("dibuat", { ascending: false });
+  const semua = data || [];
+  const gambar = list => list.length
+    ? `<div class="grid">${list.map(b => `<div class="card">
+        ${safeUrl(b.gambar_url) ? `<div class="thumb"><img loading="lazy" src="${safeUrl(b.gambar_url)}" alt=""></div>` : ""}
+        <div class="meta">${tgl(b.dibuat)}</div>
+        <h3><a href="berita.html?id=${b.id}">${esc(b.judul)}</a></h3><p>${esc(b.ringkasan)}</p><div class="rk" data-rk="berita:${b.id}"></div></div>`).join("")}</div>`
+    : `<div class="kosong">Belum ada berita yang cocok.</div>`;
+  box.innerHTML = gambar(semua);
+  document.getElementById("cari").addEventListener("input", e => {
+    const q = e.target.value.toLowerCase();
+    box.innerHTML = gambar(semua.filter(b => (b.judul + " " + b.ringkasan).toLowerCase().includes(q)));
+  });
+})();
+</script>
+</body>
+</html>

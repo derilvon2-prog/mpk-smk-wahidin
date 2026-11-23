@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MPK SMK WAHIDIN</title>
+<meta name="description" content="Portal resmi Majelis Permusyawaratan Kelas (MPK) SMK Wahidin, Cirebon: aspirasi siswa, informasi, dan kegiatan.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#14308f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>try{if(localStorage.getItem("mpk_tema")==="gelap")document.documentElement.dataset.tema="gelap"}catch(e){}</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav" id="nav"></header>
+
+<section class="hero2">
+  <div class="wrap">
+    <p class="hi">Selamat datang di <b>website kami</b>!</p>
+    <h1>Mewakili <em>Suara</em>,<br>Mengawal <em>Perubahan</em>.</h1>
+    <div class="actions" style="justify-content:center;margin-top:16px">
+      <a class="btn" href="aspirasi.html#kirim">Tulis Aspirasi</a>
+      <a class="btn gray" href="aspirasi.html">Lihat Forum</a>
+    </div>
+    <div class="heroStage">
+      <div id="b-badges"></div>
+      <div id="b-foto"></div>
+      <div id="b-statistik" class="statsPos"></div>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+  <div id="warn"></div>
+  
+  <section class="blok hide" id="sPeng" style="padding-bottom:0">
+    <h2 class="judul">Pengumuman</h2>
+    <div id="b-pengumuman" class="grid" data-limit="3"></div>
+    <p style="margin-top:14px"><a href="pengumuman.html">Semua pengumuman <svg class="ic arr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a></p>
+  </section>
+
+  <section class="blok">
+    <h2 class="judul">Kanal Aspirasi Siswa</h2>
+    <div class="fitur3">
+      <div class="card"><span class="ico"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><h3>Boleh anonim</h3><p>Nama bersifat opsional. Kamu bebas mengirim tanpa identitas.</p></div>
+      <div class="card"><span class="ico"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></span><h3>Dimoderasi</h3><p>Setiap aspirasi diperiksa pengurus sebelum tampil di forum publik.</p></div>
+      <div class="card"><span class="ico"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></span><h3>Transparan</h3><p>Status tindak lanjut ditampilkan di forum.</p></div>
+    </div>
+    <a class="btn" href="aspirasi.html#kirim">Yuk Tulis Aspirasi Sekarang <svg class="ic arr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+  </section>
+
+  <section class="blok" style="padding-top:0">
+    <h2 class="judul">Forum Aspirasi Terbaru</h2>
+    <p class="sub">Aspirasi yang sudah diverifikasi pengurus.</p>
+    <div id="b-forum" class="grid" data-limit="3"></div>
+    <p style="margin-top:14px"><a href="aspirasi.html">Buka forum lengkap <svg class="ic arr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a></p>
+  </section>
+
+  <section class="blok" style="padding-top:0">
+    <h2 class="judul">Polling</h2>
+    <p class="sub">Ikut menentukan arah kegiatan MPK.</p>
+    <div id="b-polling" class="grid"></div>
+  </section>
+
+  <section class="blok" style="padding-top:0">
+    <h2 class="judul">Komisi &amp; Program Kerja</h2>
+    <p class="sub"></p>
+    <div id="b-komisi" class="grid"></div>
+  </section>
+
+  <section class="blok" style="padding-top:0">
+    <h2 class="judul">Bagaimana Suaramu Ditindaklanjuti?</h2>
+    <p class="sub"></p>
+    <div id="b-tahapan" class="langkah"></div>
+  </section>
+
+  <section class="blok" style="padding-top:0">
+    <h2 class="judul">Berita &amp; Publikasi</h2>
+    <p class="sub"></p>
+    <div id="b-berita" class="grid" data-limit="3"></div>
+    <p style="margin-top:14px"><a href="publikasi.html">Lihat semua publikasi <svg class="ic arr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a></p>
+  </section>
+
+  <section class="blok" style="padding-top:0">
+    <h2 class="judul">Aktivitas &amp; Event</h2>
+    <p class="sub"></p>
+    <div id="b-aktivitas" class="grid" data-limit="3"></div>
+  </section>
+
+  <section class="blok" style="padding-top:0">
+    <h2 class="judul">Daftar Anggota MPK</h2>
+    <p class="sub"></p>
+    <div id="b-pengurus" class="grid" data-limit="8"></div>
+    <p style="margin-top:14px"><a href="struktur.html">Lihat seluruh anggota <svg class="ic arr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a></p>
+  </section>
+
+  <section class="blok" style="padding-top:0">
+    <h2 class="judul">Lokasi &amp; Kontak</h2>
+    <p class="sub"></p>
+    <div id="b-kontak" style="margin-bottom:14px"></div>
+    <div id="b-peta"></div>
+  </section>
+</main>
+
+<footer id="foot"></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="anim.js"></script>
+<script src="fitur.js"></script>
+<script src="blok.js"></script>
+<script>
+renderShell("index.html").then(() => Blok.init());
+</script>
+</body>
+</html>

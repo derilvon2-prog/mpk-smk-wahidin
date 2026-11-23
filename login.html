@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Login Pengurus - MPK SMK WAHIDIN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav" id="nav"></header>
+<main class="wrap">
+  <div class="loginbox">
+    <h2 style="margin-bottom:4px">Login Pengurus</h2>
+    <p class="sub" style="margin:0 0 6px">Khusus pengurus MPK. Akun dibuat oleh admin, tidak ada pendaftaran publik.</p>
+    <div id="info"></div>
+    <form id="f" autocomplete="on">
+      <label for="email">Email</label>
+      <input id="email" type="email" required autocomplete="username">
+      <label for="pw">Kata sandi</label>
+      <input id="pw" type="password" required autocomplete="current-password">
+      <div id="pesan"></div>
+      <button class="btn" id="tombol" style="width:100%;margin-top:14px;justify-content:center">Masuk</button>
+    </form>
+  </div>
+</main>
+<footer id="foot"></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="anim.js"></script>
+<script>
+(async () => {
+  const prof = await renderShell("");
+  if (configWarning(document.getElementById("info"))) return;
+  if (prof) { location.replace("dashboard.html"); return; }
+  const f = document.getElementById("f"), pesan = document.getElementById("pesan"), tb = document.getElementById("tombol");
+  f.addEventListener("submit", async e => {
+    e.preventDefault();
+    pesan.innerHTML = ""; tb.disabled = true; tb.textContent = "Memeriksa...";
+    const { error } = await sb.auth.signInWithPassword({
+      email: document.getElementById("email").value.trim(),
+      password: document.getElementById("pw").value
+    });
+    if (error) {
+      pesan.innerHTML = `<div class="msg err">Email atau kata sandi salah.</div>`;
+      tb.disabled = false; tb.textContent = "Masuk"; return;
+    }
+    const p = await getProfile();
+    if (!p) {
+      await sb.auth.signOut();
+      pesan.innerHTML = `<div class="msg err">Akun ini tidak aktif atau belum terdaftar sebagai pengurus.</div>`;
+      tb.disabled = false; tb.textContent = "Masuk"; return;
+    }
+    location.replace("dashboard.html");
+  });
+})();
+</script>
+</body>
+</html>

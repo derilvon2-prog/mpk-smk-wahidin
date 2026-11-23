@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Musik - MPK SMK WAHIDIN</title>
+<meta name="theme-color" content="#14308f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>try{if(localStorage.getItem("mpk_tema")==="gelap")document.documentElement.dataset.tema="gelap"}catch(e){}</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav" id="nav"></header>
+<section class="hero kecil"><div class="wrap"><h1>Musik</h1><p>Lagu pilihan pengurus MPK SMK Wahidin.</p></div></section>
+<main class="wrap" style="padding:30px 0">
+  <div id="warn"></div>
+  <div id="isi" class="grid"></div>
+</main>
+<footer id="foot"></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="anim.js"></script>
+<script src="fitur.js"></script>
+<script>
+(async () => {
+  await renderShell("musik.html");
+  if (configWarning(document.getElementById("warn"))) return;
+  const box = document.getElementById("isi");
+  const { data } = await sb.from("musik").select("*").eq("tampil", true).order("urutan").order("id");
+  if (!data || !data.length) { box.innerHTML = `<div class="kosong">Belum ada lagu. Pengurus bisa menambahkannya lewat Dashboard.</div>`; return; }
+  // Hanya pola link yang dikenal yang dijadikan pemutar (aman dari injeksi)
+  const jenis = u => {
+    let m;
+    if ((m = u.match(/^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?v=([\w-]{11})/)) || (m = u.match(/^https:\/\/youtu\.be\/([\w-]{11})/)) || (m = u.match(/^https:\/\/(?:www\.)?youtube\.com\/embed\/([\w-]{11})/)))
+      return { t: "yt", src: `https://www.youtube-nocookie.com/embed/${m[1]}?autoplay=1&rel=0` };
+    if ((m = u.match(/^https:\/\/open\.spotify\.com\/(track|album|playlist|episode)\/([A-Za-z0-9]{10,30})/)))
+      return { t: "sp", src: `https://open.spotify.com/embed/${m[1]}/${m[2]}` };
+    if (/^https:\/\/[^\s"'<>]+\.(mp3|ogg|m4a|wav)(\?[^\s"'<>]*)?$/i.test(u)) return { t: "audio", src: u };
+    return { t: "link", src: u };
+  };
+  box.innerHTML = data.map(l => `<div class="card trk" data-id="${l.id}"><div class="jud"><div><h3>${esc(l.judul)}</h3><span class="meta">${esc(l.artis)}</span></div>
+    <button class="btn sm" data-p="${l.id}">Putar</button></div><div class="pl"></div></div>`).join("");
+  box.onclick = e => {
+    const b = e.target.closest("[data-p]"); if (!b) return;
+    const l = data.find(x => String(x.id) === b.dataset.p), j = jenis(l.url), pl = b.closest(".card").querySelector(".pl");
+    document.body.classList.add("bermusik");
+    if (j.t === "audio") { pl.innerHTML = `<audio controls autoplay src="${esc(j.src)}"></audio>`; const a = pl.firstChild; a.onpause = () => document.body.classList.remove("bermusik"); a.onplay = () => document.body.classList.add("bermusik"); }
+    else if (j.t === "link") { pl.innerHTML = `<a class="btn sm gray" href="${esc(j.src)}" target="_blank" rel="noopener noreferrer">Buka link lagu</a>`; document.body.classList.remove("bermusik"); }
+    else pl.innerHTML = `<iframe src="${esc(j.src)}" allow="autoplay; encrypted-media" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+  };
+})();
+</script>
+</body>
+</html>

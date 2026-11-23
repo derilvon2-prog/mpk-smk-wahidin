@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pengumuman - MPK SMK WAHIDIN</title>
+<meta name="theme-color" content="#14308f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>try{if(localStorage.getItem("mpk_tema")==="gelap")document.documentElement.dataset.tema="gelap"}catch(e){}</script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav" id="nav"></header>
+<section class="hero kecil"><div class="wrap"><h1>Pengumuman</h1><p id="subjudul"></p></div></section>
+<main class="wrap" style="padding:30px 0">
+  <div id="warn"></div>
+  <div id="isi"></div>
+</main>
+<footer id="foot"></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="anim.js"></script>
+<script src="fitur.js"></script>
+<script>
+(async () => {
+  await renderShell("pengumuman.html");
+  if (configWarning(document.getElementById("warn"))) return;
+  document.getElementById("subjudul").textContent = "Informasi resmi dari pengurus MPK SMK Wahidin.";
+  const box = document.getElementById("isi");
+  const seen = (() => { try { return localStorage.getItem("mpk_png_seen"); } catch { return null; } })();
+  const { data } = await sb.from("pengumuman").select("*").eq("terbit", true).order("dibuat", { ascending: false });
+  const notif = "Notification" in window && Notification.permission === "default"
+    ? `<p><button class="btn sm gray" id="nt">Aktifkan notifikasi browser</button> <span class="meta">Notifikasi muncul saat kamu membuka website ini dan ada pengumuman baru.</span></p>` : "";
+  box.innerHTML = notif + ((data && data.length) ? data.map(p => `<article class="card" style="margin-bottom:14px">
+      <div class="meta">${tgl(p.dibuat)} ${!seen || p.dibuat > seen ? `<span class="badge">BARU</span>` : ""}</div>
+      <h3>${esc(p.judul)}</h3><p>${nl2br(p.isi)}</p></article>`).join("") : `<div class="kosong">Belum ada pengumuman.</div>`);
+  const nt = document.getElementById("nt");
+  if (nt) nt.onclick = async () => { const r = await Notification.requestPermission(); nt.parentElement.remove(); };
+  setTimeout(() => { try { localStorage.setItem("mpk_png_seen", new Date().toISOString()); } catch { } const d = document.getElementById("bellDot"); if (d) d.classList.remove("on"); }, 1500);
+})();
+</script>
+</body>
+</html>

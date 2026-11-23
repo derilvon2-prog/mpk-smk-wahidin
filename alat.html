@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cuaca &amp; Gempa - MPK SMK WAHIDIN</title>
+<meta name="theme-color" content="#14308f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>try{if(localStorage.getItem("mpk_tema")==="gelap")document.documentElement.dataset.tema="gelap"}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav" id="nav"></header>
+<section class="hero kecil"><div class="wrap"><h1>Cuaca &amp; Gempa</h1><p>Informasi cuaca Cirebon dan gempa terbaru, diperbarui langsung dari sumbernya.</p></div></section>
+<main class="wrap alatwrap" style="padding:30px 0">
+  <i class="hias h1"></i><i class="hias h2"></i>
+  <div id="warn"></div>
+  <h2 class="judul">Cuaca Cirebon</h2>
+  <div id="cuaca" class="cuaca skel" style="margin:14px 0 30px"></div>
+  <h2 class="judul">Gempa Terbaru</h2>
+  <div class="seismo" aria-hidden="true"><svg viewBox="0 0 600 60" preserveAspectRatio="none"><polyline class="gelomb" points="0,30 60,30 80,8 100,52 120,18 140,40 160,30 600,30" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg></div>
+  <div id="gempa" class="gempaGrid" style="margin-top:14px"><div class="gkartu skel" style="height:140px"></div></div>
+</main>
+<footer id="foot"></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="anim.js"></script>
+<script src="fitur.js"></script>
+<script>
+(async () => {
+  await renderShell("alat.html");
+  const kode = c => c === 0 ? ["Cerah", "cerah"] : c <= 2 ? ["Cerah berawan", "berawan"] : c === 3 ? ["Berawan", "mendung"] : c <= 48 ? ["Berkabut", "mendung"] : c <= 57 ? ["Gerimis", "hujan"] : c <= 67 ? ["Hujan", "hujan"] : c <= 77 ? ["Salju", "mendung"] : c <= 82 ? ["Hujan lebat", "hujan"] : c <= 86 ? ["Salju lebat", "mendung"] : ["Badai petir", "petir"];
+  const hari = d => new Date(d + "T00:00:00").toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short" });
+  const ikon = j => ({
+    cerah: '<span class="wi sun"><i></i></span>', berawan: '<span class="wi sun"><i></i></span><span class="wi cloud sm"></span>',
+    mendung: '<span class="wi cloud"></span>', hujan: '<span class="wi cloud"></span><span class="wi rain"><b></b><b></b><b></b></span>',
+    petir: '<span class="wi cloud dark"></span><span class="wi bolt"></span>' }[j]);
+  const el = document.getElementById("cuaca");
+  try {
+    const r = await fetch("https://api.open-meteo.com/v1/forecast?latitude=-6.7063&longitude=108.557&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FJakarta&forecast_days=5");
+    const d = await r.json(), c = d.current, [nama, j] = kode(c.weather_code), malam = c.is_day === 0;
+    el.className = `cuaca ${j} ${malam ? "malam" : ""}`;
+    el.innerHTML = `<div class="langit"><span class="matahari"></span><span class="awan a1"></span><span class="awan a2"></span><span class="awan a3"></span>
+        ${j === "hujan" || j === "petir" ? [...Array(26)].map((_, i) => `<i class="tetes" style="left:${(i * 3.9) % 100}%;animation-delay:${(i % 7) * .17}s;animation-duration:${.7 + (i % 4) * .15}s"></i>`).join("") : ""}
+        ${j === "petir" ? '<span class="kilat"></span>' : ""}</div>
+      <div class="cinfo"><div class="suhu"><b data-n="${Math.round(c.temperature_2m)}">0</b><sup>&deg;C</sup></div>
+        <div class="cnama">${nama}</div><div class="clok">${ic("pin", 15)} Cirebon, Jawa Barat</div>
+        <div class="chips"><span>${ic("droplet", 16)} Kelembapan ${c.relative_humidity_2m}%</span><span>${ic("wind", 16)} Angin ${Math.round(c.wind_speed_10m)} km/j</span><span>${ic("thermo", 16)} Hari ini ${Math.round(d.daily.temperature_2m_min[0])}&deg; - ${Math.round(d.daily.temperature_2m_max[0])}&deg;</span></div></div>`;
+    const n = el.querySelector("[data-n]"), tgt = +n.dataset.n, t0 = performance.now();
+    const f = t => { const p = Math.min(1, (t - t0) / 1300); n.textContent = Math.round(tgt * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f);
+    const pr = document.createElement("div"); pr.className = "prakiraan";
+    pr.innerHTML = d.daily.time.map((t, i) => { const [nm, jj] = kode(d.daily.weather_code[i]);
+      return `<div class="hk" style="animation-delay:${i * .09}s"><b>${i === 0 ? "Hari ini" : hari(t)}</b><div class="wiw">${ikon(jj)}</div><span>${nm}</span>
+        <em>${Math.round(d.daily.temperature_2m_min[i])}&deg; / ${Math.round(d.daily.temperature_2m_max[i])}&deg;</em><small>${ic("droplet", 12)} ${d.daily.precipitation_probability_max[i] ?? 0}%</small></div>`; }).join("");
+    el.after(pr);
+  } catch { el.className = "cuaca"; el.innerHTML = `<div class="cinfo">Data cuaca belum bisa dimuat. Coba lagi nanti.</div>`; }
+
+  const tingkat = m => m >= 6 ? "kuat" : m >= 5 ? "sedang" : m >= 4 ? "ringan" : "kecil";
+  const kartu = (g, i) => { const m = parseFloat(g.Magnitude) || 0;
+    return `<div class="gkartu ${tingkat(m)}" style="animation-delay:${i * .1}s"><div class="gmag"><span class="ring"></span><span class="ring r2"></span><b>${esc(g.Magnitude)}</b><small>SR</small></div>
+      <div class="gisi"><h3>${esc(g.Wilayah)}</h3><div class="gmeta"><span>${ic("activity", 14)} Kedalaman ${esc(g.Kedalaman)}</span><span>${ic("pin", 14)} ${esc(g.Lintang)}, ${esc(g.Bujur)}</span></div>
+      <div class="gwkt">${esc(g.Tanggal)} &middot; ${esc(g.Jam)}</div>${g.Potensi ? `<span class="gtag">${esc(g.Potensi)}</span>` : ""}${g.Dirasakan ? `<p class="gdr">Dirasakan: ${esc(g.Dirasakan)}</p>` : ""}</div></div>`; };
+  const gb = document.getElementById("gempa");
+  try {
+    const [a, b] = await Promise.all([fetch("https://data.bmkg.go.id/DataMKG/TEWS/autogempa.json").then(r => r.json()), fetch("https://data.bmkg.go.id/DataMKG/TEWS/gempadirasakan.json").then(r => r.json()).catch(() => null)]);
+    const list = [a.Infogempa.gempa, ...((b && b.Infogempa && b.Infogempa.gempa) || []).slice(0, 5)];
+    gb.innerHTML = list.map(kartu).join("") + `<p class="meta" style="grid-column:1/-1">Sumber: BMKG (bmkg.go.id). Untuk peringatan resmi, ikuti kanal BMKG.</p>`;
+  } catch { gb.innerHTML = `<div class="gkartu"><div class="gisi">Data gempa belum bisa dimuat. Lihat langsung di <a href="https://www.bmkg.go.id" target="_blank" rel="noopener">bmkg.go.id</a>.</div></div>`; }
+})();
+</script>
+</body>
+</html>
